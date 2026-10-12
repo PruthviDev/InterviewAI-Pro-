@@ -1,3 +1,15 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = { output: 'standalone', poweredByHeader: false, reactStrictMode: true };
+const nextConfig = {
+  output: 'standalone',
+  poweredByHeader: false,
+  reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+      },
+    ];
+  },
+};
 export default nextConfig;

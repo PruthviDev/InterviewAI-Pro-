@@ -4,7 +4,10 @@ import { asyncHandler } from '../middleware/asyncHandler.js';
 import type { AuthResult, AuthService } from '../services/authService.js';
 
 export const REFRESH_COOKIE = 'aip_refresh';
-const COOKIE_PATH = '/api/auth';
+export const ACCESS_COOKIE = 'accessToken';
+const REFRESH_PATH = '/api/auth';
+const ACCESS_PATH = '/';
+const ACCESS_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 export interface CookieConfig {
   secure: boolean;
@@ -16,16 +19,29 @@ export function createAuthController(auth: AuthService, cookie: CookieConfig) {
     httpOnly: true,
     sameSite: 'lax',
     secure: cookie.secure,
-    path: COOKIE_PATH,
     ...(cookie.domain ? { domain: cookie.domain } : {}),
   });
 
   const respond = (res: Response, status: number, result: AuthResult): void => {
-    res.cookie(REFRESH_COOKIE, result.refreshToken, { ...base(), expires: result.refreshExpiresAt });
+    res.cookie(REFRESH_COOKIE, result.refreshToken, {
+      ...base(),
+      path: REFRESH_PATH,
+      expires: result.refreshExpiresAt,
+    });
+    res.cookie(ACCESS_COOKIE, result.accessToken, {
+      ...base(),
+      path: ACCESS_PATH,
+      expires: new Date(Date.now() + ACCESS_TTL_MS),
+    });
     res.status(status).json({
       success: true,
       data: { user: result.user, accessToken: result.accessToken },
     });
+  };
+
+  const clearAuth = (res: Response): void => {
+    res.clearCookie(REFRESH_COOKIE, { ...base(), path: REFRESH_PATH });
+    res.clearCookie(ACCESS_COOKIE, { ...base(), path: ACCESS_PATH });
   };
 
   const refreshTokenFrom = (req: Request): string | undefined => {
@@ -45,14 +61,14 @@ export function createAuthController(auth: AuthService, cookie: CookieConfig) {
     try {
       respond(res, 200, await auth.refresh(refreshTokenFrom(req)));
     } catch (err) {
-      res.clearCookie(REFRESH_COOKIE, base());
+      clearAuth(res);
       throw err;
     }
   });
 
   const logout: RequestHandler = asyncHandler(async (req, res) => {
     await auth.logout(refreshTokenFrom(req));
-    res.clearCookie(REFRESH_COOKIE, base());
+    clearAuth(res);
     res.json({ success: true, data: { loggedOut: true } });
   });
 

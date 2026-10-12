@@ -18,15 +18,22 @@ export const passwordSchema = z
   .regex(/[A-Z]/, 'Include an uppercase letter')
   .regex(/\d/, 'Include a number');
 
+export const nameSchema = z
+  .string()
+  .trim()
+  .min(3, 'Name must be at least 3 characters')
+  .max(80, 'Name must be at most 80 characters')
+  .refine((v) => !v.includes('@'), { message: 'Name cannot contain @' });
+
 export const registerSchema = z.object({
-  name: z.string().trim().min(1, 'Enter your name').max(80),
+  name: nameSchema,
   email: emailSchema,
   password: passwordSchema,
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  email: emailSchema,
+  loginIdentifier: z.string().trim().min(1, 'Enter your name or email').max(254),
   password: z.string().min(1, 'Enter your password').max(128),
 });
 export type LoginInput = z.infer<typeof loginSchema>;

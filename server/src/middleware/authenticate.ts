@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 import type { Role } from '../constants.js';
 import { ForbiddenError, UnauthorizedError } from '../errors/index.js';
+import { ACCESS_COOKIE } from '../controllers/authController.js';
 import type { TokenService } from '../services/tokenService.js';
 import '../types/express.js';
 
@@ -8,11 +9,19 @@ export const authenticate =
   (tokens: TokenService): RequestHandler =>
   async (req, _res, next) => {
     const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
+    const cookieToken: unknown = req.cookies?.[ACCESS_COOKIE];
+
+    const raw = header?.startsWith('Bearer ')
+      ? header.slice(7)
+      : typeof cookieToken === 'string'
+        ? cookieToken
+        : null;
+
+    if (!raw) {
       return next(new UnauthorizedError('Authentication required', 'MISSING_TOKEN'));
     }
     try {
-      req.auth = await tokens.verifyAccessToken(header.slice(7));
+      req.auth = await tokens.verifyAccessToken(raw);
       next();
     } catch (err) {
       next(err);
