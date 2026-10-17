@@ -24,9 +24,19 @@ export class InMemoryUserRepository implements UserRepository {
   async findById(id: string) {
     return this.users.find((u) => u.id === id) ?? null;
   }
+  async findByName(name: string) {
+    return this.users.find((u) => u.name.toLowerCase() === name.toLowerCase()) ?? null;
+  }
+  async findByIdentifier(identifier: string) {
+    if (identifier.includes('@')) return this.findByEmail(identifier.toLowerCase());
+    return this.findByName(identifier);
+  }
   async create(data: { email: string; passwordHash: string; name: string }) {
     if (this.users.some((u) => u.email === data.email)) {
       throw new ConflictError('Email already registered', 'EMAIL_TAKEN');
+    }
+    if (this.users.some((u) => u.name.toLowerCase() === data.name.toLowerCase())) {
+      throw new ConflictError('Name already taken', 'NAME_TAKEN');
     }
     const user: UserRecord = {
       id: randomUUID(),

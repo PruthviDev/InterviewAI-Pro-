@@ -16,7 +16,11 @@ model User {
   id           String    @id @default(uuid())
   email        String    @unique
   passwordHash String
+<<<<<<< HEAD
   name         String
+=======
+  name         String    @unique
+>>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6
   role         Role      @default(USER)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())

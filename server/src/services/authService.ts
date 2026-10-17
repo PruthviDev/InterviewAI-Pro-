@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { LoginInput, RegisterInput } from '../validation/index.js';
 import type { Role } from '../constants.js';
-import { ForbiddenError, UnauthorizedError } from '../errors/index.js';
+import { ConflictError, ForbiddenError, UnauthorizedError } from '../errors/index.js';
 import type { SessionRepository, UserRecord, UserRepository } from '../repositories/types.js';
 import type { PasswordService } from './passwordService.js';
 import { TokenService } from './tokenService.js';
@@ -43,9 +43,9 @@ export class AuthService {
   constructor(private readonly deps: AuthDeps) {}
 
   async register(input: RegisterInput): Promise<AuthResult> {
+    const existing = await this.deps.users.findByName(input.name);
+    if (existing) throw new ConflictError('Name already taken', 'NAME_TAKEN');
     const passwordHash = await this.deps.passwords.hash(input.password);
-    // The repository maps the unique-index violation to EMAIL_TAKEN, so concurrent
-    // registrations cannot both succeed.
     const user = await this.deps.users.create({
       email: input.email,
       passwordHash,
@@ -55,12 +55,12 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<AuthResult> {
-    const user = await this.deps.users.findByEmail(input.email);
+    const user = await this.deps.users.findByIdentifier(input.loginIdentifier);
     // Verify against a dummy hash when the user is unknown so timing doesn't reveal it.
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await this.deps.passwords.verify(hash, input.password);
     if (!user || !valid) {
-      throw new UnauthorizedError('Incorrect email or password', 'INVALID_CREDENTIALS');
+      throw new UnauthorizedError('Incorrect name/email or password', 'INVALID_CREDENTIALS');
     }
     if (!user.isActive) throw new ForbiddenError('This account is disabled', 'ACCOUNT_DISABLED');
     return this.issue(user, randomUUID());

@@ -6,7 +6,11 @@ jobs:
   server:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: server } }
+<<<<<<< HEAD
     env: { DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/interviewpro" }
+=======
+    env: { DATABASE_URL: "postgresql://pruthVI@123@localhost:5432/ecommerce_db" }
+>>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
