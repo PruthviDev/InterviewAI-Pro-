@@ -9,18 +9,6 @@ export function createLogger(env: Pick<Env, 'LOG_LEVEL' | 'NODE_ENV'>): Logger {
         'req.headers.authorization',
         'req.headers.cookie',
         'res.headers["set-cookie"]',
-<<<<<<< HEAD
-        '*.password',
-        '*.passwordHash',
-        '*.token',
-        '*.refreshToken',
-        '*.apiKey',
-      ],
-      censor: '[redacted]',
-    },
-  });
-}
-=======
         'req.body.password',
         'req.body.refreshToken',
         '*.password',
@@ -29,8 +17,8 @@ export function createLogger(env: Pick<Env, 'LOG_LEVEL' | 'NODE_ENV'>): Logger {
         '*.accessToken',
         '*.refreshToken',
         '*.apiKey',
-        '*.*.password',        // catches one more nesting level
-        '*.*.accessToken',     // e.g. data.accessToken in logged responses
+        '*.*.password',
+        '*.*.accessToken',
       ],
       censor: '[redacted]',
     },
@@ -40,4 +28,3 @@ export function createLogger(env: Pick<Env, 'LOG_LEVEL' | 'NODE_ENV'>): Logger {
       : {}),
   });
 }
->>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6

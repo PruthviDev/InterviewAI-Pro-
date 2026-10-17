@@ -25,13 +25,9 @@ export interface SessionRecord extends NewSession {
 export interface UserRepository {
   findByEmail(email: string): Promise<UserRecord | null>;
   findById(id: string): Promise<UserRecord | null>;
-<<<<<<< HEAD
-  /** Throws ConflictError('EMAIL_TAKEN') when the email already exists. */
-=======
   findByIdentifier(identifier: string): Promise<UserRecord | null>;
   findByName(name: string): Promise<UserRecord | null>;
   /** Throws ConflictError('EMAIL_TAKEN') when the email already exists, ConflictError('NAME_TAKEN') when name exists. */
->>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6
   create(data: { email: string; passwordHash: string; name: string }): Promise<UserRecord>;
 }
 

@@ -13,8 +13,6 @@ export class PrismaUserRepository implements UserRepository {
     return this.db.user.findUnique({ where: { id } });
   }
 
-<<<<<<< HEAD
-=======
   findByName(name: string): Promise<UserRecord | null> {
     return this.db.user.findFirst({ where: { name: { equals: name, mode: 'insensitive' } } });
   }
@@ -26,20 +24,16 @@ export class PrismaUserRepository implements UserRepository {
     return this.db.user.findFirst({ where: { name: { equals: identifier, mode: 'insensitive' } } });
   }
 
->>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6
   async create(data: { email: string; passwordHash: string; name: string }): Promise<UserRecord> {
     try {
       return await this.db.user.create({ data });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-<<<<<<< HEAD
-=======
         const target = err.meta?.target;
         const fields = Array.isArray(target) ? target : typeof target === 'string' ? [target] : [];
         if (fields.some((f: string) => f.includes('name'))) {
           throw new ConflictError('Name already taken', 'NAME_TAKEN');
         }
->>>>>>> 69790ac84eecb67513ed2092a1f6cb35277c2da6
         throw new ConflictError('Email already registered', 'EMAIL_TAKEN');
       }
       throw err;
